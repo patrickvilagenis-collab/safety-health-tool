@@ -1,0 +1,17 @@
+# Render.com blueprint — one-click deploy of the Safety & Health backend.
+# In Render: New → Blueprint → connect this repo → Apply.
+# Render builds safety-platform/server/Dockerfile and gives you a public HTTPS URL.
+services:
+  - type: web
+    name: safety-health-backend
+    runtime: docker
+    rootDir: server
+    plan: free
+    envVars:
+      - key: API_KEY
+        generateValue: true   # Render generates a secret key; copy it into the app
+      - key: CORS_ORIGIN
+        value: "*"
+    # NOTE: the free plan uses ephemeral storage, so the SQLite file resets on
+    # restart/redeploy. For permanent storage add a Render Disk (paid) mounted at
+    # /app/data, or deploy the same Docker image on your own/Schindler infrastructure.

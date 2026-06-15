@@ -1,0 +1,40 @@
+#!/usr/bin/env python3
+"""Tiny static server for the Safety Platform (dev / local use).
+
+Usage:  python3 serve.py [port]      # default port 8000
+Then open http://localhost:8000 in your browser.
+
+The platform is 100% static — any static file server works. This script
+just adds the correct MIME type for ES modules and disables caching so
+you always get the latest files during development.
+"""
+import http.server
+import socketserver
+import sys
+import os
+
+PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 8000
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
+
+class Handler(http.server.SimpleHTTPRequestHandler):
+    extensions_map = {
+        **http.server.SimpleHTTPRequestHandler.extensions_map,
+        ".js": "text/javascript",
+        ".mjs": "text/javascript",
+        ".webmanifest": "application/manifest+json",
+        ".svg": "image/svg+xml",
+    }
+
+    def end_headers(self):
+        self.send_header("Cache-Control", "no-store")
+        super().end_headers()
+
+
+with socketserver.TCPServer(("", PORT), Handler) as httpd:
+    print(f"Safety & Health Information Tool → http://localhost:{PORT}")
+    print("Press Ctrl+C to stop.")
+    try:
+        httpd.serve_forever()
+    except KeyboardInterrupt:
+        print("\nStopped.")

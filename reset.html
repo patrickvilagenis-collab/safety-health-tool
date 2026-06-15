@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Reset — Safety &amp; Health Information Tool</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #f5f5f7; color: #1a1a1a; display: grid; place-items: center; min-height: 100vh; margin: 0; }
+    .box { background: #fff; border: 1px solid #e3e3e6; border-radius: 12px; padding: 28px 26px; max-width: 460px; box-shadow: 0 6px 18px rgba(20,20,20,.08); text-align: center; }
+    h1 { color: #E2001A; font-size: 1.2rem; margin: 0 0 6px; }
+    p { color: #555; font-size: .92rem; }
+    #log { font-size: .8rem; color: #6b7077; text-align: left; margin: 14px 0; white-space: pre-line; }
+    a.btn { display: inline-block; background: #E2001A; color: #fff; text-decoration: none; padding: 10px 18px; border-radius: 9px; font-weight: 600; margin: 4px; }
+    a.ghost { background: #fff; color: #1a1a1a; border: 1px solid #e3e3e6; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>🔄 Refreshing the app…</h1>
+    <p>Clearing the old cached version so you get the latest one. Your saved data is kept.</p>
+    <div id="log"></div>
+    <a class="btn" href="./index.html">Open the app</a>
+    <a class="btn ghost" href="./reset.html?wipe=1">Reset including data</a>
+  </div>
+  <script>
+    const log = (m) => { document.getElementById('log').textContent += m + '\n'; };
+    const wipe = new URLSearchParams(location.search).has('wipe');
+    (async () => {
+      try {
+        if ('serviceWorker' in navigator) {
+          const regs = await navigator.serviceWorker.getRegistrations();
+          for (const r of regs) { await r.unregister(); }
+          log('✓ Service workers removed (' + regs.length + ')');
+        }
+        if (window.caches) {
+          const keys = await caches.keys();
+          for (const k of keys) { await caches.delete(k); }
+          log('✓ Caches cleared (' + keys.length + ')');
+        }
+        if (wipe && window.indexedDB) {
+          await new Promise((res) => { const d = indexedDB.deleteDatabase('safety-platform'); d.onsuccess = d.onerror = d.onblocked = res; });
+          log('✓ Local data wiped');
+        }
+        log('Done. Redirecting…');
+        setTimeout(() => { location.replace('./index.html?fresh=' + Date.now()); }, 1200);
+      } catch (e) {
+        log('Error: ' + e.message + '\nPlease tap "Open the app".');
+      }
+    })();
+  </script>
+</body>
+</html>
