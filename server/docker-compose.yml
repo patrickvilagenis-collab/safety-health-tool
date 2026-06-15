@@ -1,0 +1,14 @@
+services:
+  api:
+    build: .
+    image: safety-health-backend
+    ports:
+      - "8080:8080"
+    environment:
+      # Set a shared key and require it in the app (Settings → Backend sync).
+      - API_KEY=change-this-key
+      # Restrict to your app origin in production, e.g. https://patrickvilagenis-collab.github.io
+      - CORS_ORIGIN=*
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
